@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This script gathers data from an API and returns employee TODO progress."""
+"""Script that gathers data from an API and returns employee TODO progress."""
 import requests
 import sys
 
