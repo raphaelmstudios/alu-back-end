@@ -1,27 +1,42 @@
 #!/usr/bin/python3
-"""Script that exports all employees TODO data to a JSON file."""
+"""Module"""
+
 import json
 import requests
 
 
-if __name__ == "__main__":
-    base_url = "https://jsonplaceholder.typicode.com"
+def get_employee_task(employee_id):
+    """Doc"""
+    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
+        .format(employee_id)
 
-    users = requests.get("{}/users".format(base_url)).json()
-    todos = requests.get("{}/todos".format(base_url)).json()
+    user_info = requests.request('GET', user_url).json()
 
-    all_tasks = {}
-    for user in users:
-        user_id = user.get("id")
-        username = user.get("username")
-        all_tasks[str(user_id)] = [
-            {
-                "username": username,
-                "task": task.get("title"),
-                "completed": task.get("completed")
-            }
-            for task in todos if task.get("userId") == user_id
-        ]
+    employee_username = user_info["username"]
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
+        .format(employee_id)
+    todos_info = requests.request('GET', todos_url).json()
+    return [
+        dict(zip(["task", "completed", "username"],
+                 [task["title"], task["completed"], employee_username]))
+        for task in todos_info]
 
-    with open("todo_all_employees.json", "w") as jsonfile:
-        json.dump(all_tasks, jsonfile)
+
+def get_employee_ids():
+    """Doc"""
+    users_url = "https://jsonplaceholder.typicode.com/users/"
+
+    users_info = requests.request('GET', users_url).json()
+    ids = list(map(lambda user: user["id"], users_info))
+    return ids
+
+
+if __name__ == '__main__':
+
+    employee_ids = get_employee_ids()
+
+    with open('todo_all_employees.json', "w") as file:
+        all_users = {}
+        for employee_id in employee_ids:
+            all_users[str(employee_id)] = get_employee_task(employee_id)
+        file.write(json.dumps(all_users))

@@ -1,29 +1,29 @@
 #!/usr/bin/python3
-"""Script that exports employee TODO data to a JSON file."""
+
+'''JSON export'''
+
 import json
 import requests
 import sys
 
+if __name__ == '__main__':
+    user_id = sys.argv[1]
+    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
+        .format(user_id)
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
+        .format(user_id)
 
-if __name__ == "__main__":
-    employee_id = int(sys.argv[1])
-    base_url = "https://jsonplaceholder.typicode.com"
+    user_info = requests.request('GET', user_url).json()
+    todos_info = requests.request('GET', todos_url).json()
 
-    user = requests.get("{}/users/{}".format(base_url, employee_id)).json()
-    todos = requests.get("{}/todos?userId={}".format(
-        base_url, employee_id)).json()
+    employee_name = user_info["name"]
+    task_completed = list(filter(lambda obj:
+                                 (obj["completed"] is True), todos_info))
+    number_of_done_tasks = len(task_completed)
+    total_number_of_tasks = len(todos_info)
 
-    username = user.get("username")
-    filename = "{}.json".format(employee_id)
-
-    tasks = [
-        {
-            "task": task.get("title"),
-            "completed": task.get("completed"),
-            "username": username
-        }
-        for task in todos
-    ]
-
-    with open(filename, "w") as jsonfile:
-        json.dump({str(employee_id): tasks}, jsonfile)
+    with open('{}.json'.format(user_id), 'w') as jsonfile:
+        json.dump({user_id: [{"task": task["title"],
+                              "completed": task["completed"],
+                              "username": user_info["username"]}
+                             for task in todos_info]}, jsonfile)
