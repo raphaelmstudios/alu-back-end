@@ -17,13 +17,14 @@ if __name__ == "__main__":
     todos_info = requests.get(todos_url).json()
 
     employee_name = user_info.get("name")
-    task_completed = list(filter(lambda obj: obj.get("completed") is True,
-                                 todos_info))
-    number_of_done_tasks = len(task_completed)
+    done_tasks = [t for t in todos_info if t.get("completed") is True]
+    number_of_done_tasks = len(done_tasks)
     total_number_of_tasks = len(todos_info)
 
+    # First line: EXACT format
     print("Employee {} is done with tasks({}/{}):"
           .format(employee_name, number_of_done_tasks, total_number_of_tasks))
 
-    for task in task_completed:
+    # Next lines: EXACT format -> \t + space + title
+    for task in done_tasks:
         print("\t {}".format(task.get("title")))
